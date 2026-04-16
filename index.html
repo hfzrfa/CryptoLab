@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoLab - Advanced Cybersecurity Suite</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CryptoJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- OpenPGP.js for PKI / Asymmetric Cryptography -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openpgp/5.11.1/openpgp.min.js"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="container">
+        <header>
+            <h1>CryptoLab<span>.</span></h1>
+            <p>Symmetric & Asymmetric Workspace</p>
+
+            <div class="app-tabs">
+                <button class="tab-btn active" data-target="classic-view">Classic & Modern AES</button>
+                <button class="tab-btn" data-target="pgp-view">OpenPGP (Asymmetric) <span class="badge">NEW</span></button>
+            </div>
+        </header>
+
+        <!-- VIEW: CLASSIC & SYMMETRIC -->
+        <main class="glass-panel view-section active" id="classic-view">
+            <div class="controls-section">
+                <!-- Algorithm Selection -->
+                <div class="form-group">
+                    <label for="algorithm">Algorithm</label>
+                    <select id="algorithm">
+                        <optgroup label="Modern (Symmetric)">
+                            <option value="aes">AES</option>
+                            <option value="des">DES</option>
+                            <option value="rc4">RC4</option>
+                        </optgroup>
+                        <optgroup label="Classical Ciphers">
+                            <option value="caesar">Caesar Cipher</option>
+                            <option value="vigenere">Vigenère Cipher</option>
+                            <option value="substitution">Substitution Cipher</option>
+                            <option value="rot13">ROT13</option>
+                        </optgroup>
+                        <optgroup label="Encoding / Decoding">
+                            <option value="base64">Base64</option>
+                            <option value="hex">Hexadecimal</option>
+                            <option value="decimal">Decimal / ASCII Array</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Mode Selection -->
+                <div class="form-group">
+                    <label for="mode">Action Mode</label>
+                    <select id="mode">
+                        <option value="encrypt">Encrypt / Encode</option>
+                        <option value="decrypt">Decrypt / Decode</option>
+                    </select>
+                </div>
+
+                <!-- Primary Key -->
+                <div class="form-group" id="key-group">
+                    <label for="key" id="key-label">Secret Key</label>
+                    <div class="flex-row">
+                        <input type="text" id="key" placeholder="Enter key..." style="flex: 1;">
+                        <select id="keyFormat" class="small-select hidden">
+                            <option value="utf8">UTF-8</option>
+                            <option value="hex">Hex</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="form-group hidden" id="advanced-group">
+                    <label for="iv">Initialization Vector (IV)</label>
+                    <div class="flex-row">
+                        <input type="text" id="iv" placeholder="Optional IV..." style="flex: 1;">
+                        <select id="ivFormat" class="small-select">
+                            <option value="utf8">UTF-8</option>
+                            <option value="hex">Hex</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex-row mt-2">
+                        <div style="flex: 1;">
+                            <label>AES Mode</label>
+                            <select id="aesMode" class="full-select">
+                                <option value="CBC">CBC</option>
+                                <option value="ECB">ECB</option>
+                                <option value="CFB">CFB</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Data Format</label>
+                            <select id="dataFormat" class="full-select">
+                                <option value="base64">Base64</option>
+                                <option value="hex">Hex</option>
+                                <option value="raw">Raw/UTF8</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="io-section">
+                <div class="input-panel">
+                    <label for="inputText">Input Data</label>
+                    <textarea id="inputText" placeholder="Paste or type your text here..."></textarea>
+                </div>
+                
+                <div class="action-panel">
+                    <button id="executeBtn" class="primary-btn">
+                        <span>Execute</span>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                    <button id="swapBtn" class="icon-btn" title="Swap Input & Output">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 10v12M15 14V2M7 10l-4 4M7 10l4 4M15 14l-4-4M15 14l4-4"/></svg>
+                    </button>
+                </div>
+
+                <div class="output-panel">
+                    <label for="outputText">Output Data</label>
+                    <textarea id="outputText" readonly placeholder="Result will appear here..."></textarea>
+                    <div class="output-actions">
+                        <button id="copyBtn" class="secondary-btn">Copy to Clipboard</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+        </main>
+
+        <!-- VIEW: OPEN PGP ASYMMETRIC -->
+        <main class="glass-panel view-section hidden" id="pgp-view">
+            <!-- Key Management Dashboard -->
+            <div class="pgp-dashboard">
+                <div class="dashboard-header">
+                    <h2>🔑 Keychain Dashboard</h2>
+                    <div>
+                        <button id="btnShowGenerate" class="secondary-btn">➕ New Keypair</button>
+                        <button id="btnShowImport" class="secondary-btn">📥 Import Public Key</button>
+                    </div>
+                </div>
+
+                <div class="keyring-grid">
+                    <div class="key-card">
+                        <h3>My Private Keys (GPG)</h3>
+                        <p class="subtitle">Used to decrypt and sign.</p>
+                        <div id="my-keys-list" class="key-list">
+                            <p class="empty-text">No personal keys generated yet.</p>
+                        </div>
+                    </div>
+                    <div class="key-card">
+                        <h3>Public Keychain (Friends)</h3>
+                        <p class="subtitle">Used to encrypt and verify.</p>
+                        <div id="public-keys-list" class="key-list">
+                            <p class="empty-text">No friend's keys imported yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Keypair Modal -->
+            <div id="generate-modal" class="pgp-modal hidden">
+                <div class="modal-content">
+                    <h3>Generate New PGP Keypair</h3>
+                    <p class="subtitle mt-1">Buat identitas digital Anda (RSA 2048-bit).</p>
+                    <div class="form-group mt-2">
+                        <label>Name</label>
+                        <input type="text" id="pgpGenName" placeholder="John Doe">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Email</label>
+                        <input type="text" id="pgpGenEmail" placeholder="john@example.com">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Passphrase</label>
+                        <input type="password" id="pgpGenPass" placeholder="Strong password to protect private key...">
+                    </div>
+                    <div class="mt-4 flex-row" style="gap:1rem;">
+                        <button id="doGeneratePgp" class="primary-btn" style="flex:1;">Generate Key</button>
+                        <button id="cancelGeneratePgp" class="secondary-btn">Cancel</button>
+                    </div>
+                    <div id="genStatus" class="mt-2 status-msg"></div>
+                </div>
+            </div>
+
+            <!-- Import Key Modal -->
+            <div id="import-modal" class="pgp-modal hidden">
+                <div class="modal-content">
+                    <h3>Import Public Key</h3>
+                    <p class="subtitle mt-1">Paste PGP Public Key (.asc) milik teman Anda.</p>
+                    <div class="form-group mt-2">
+                        <textarea id="pgpImportBlock" style="min-height: 150px; font-family: monospace; font-size: 0.8rem;" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----..."></textarea>
+                    </div>
+                    <div class="mt-4 flex-row" style="gap:1rem;">
+                        <button id="doImportPgp" class="primary-btn" style="flex:1;">Import Key</button>
+                        <button id="cancelImportPgp" class="secondary-btn">Cancel</button>
+                    </div>
+                    <div id="importStatus" class="mt-2 status-msg"></div>
+                </div>
+            </div>
+
+            <!-- Export Key Modal -->
+            <div id="export-modal" class="pgp-modal hidden">
+                <div class="modal-content">
+                    <h3>Export Public Key</h3>
+                    <p class="subtitle mt-1">Berikan Teks ini kepada teman Anda agar mereka bisa mengirimi Anda pesan rahasia.</p>
+                    <div class="form-group mt-2">
+                        <textarea id="pgpExportBlock" readonly style="min-height: 250px; font-family: monospace; font-size: 0.8rem;"></textarea>
+                    </div>
+                    <div class="mt-4 flex-row" style="justify-content: flex-end;">
+                        <button id="cancelExportPgp" class="secondary-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PGP Operations Section -->
+            <div class="pgp-ops-section mt-4">
+                <h2>📨 PGP Messages & File Ops</h2>
+                
+                <div class="controls-section ops-grid">
+                    <div class="form-group">
+                        <label>Operation</label>
+                        <select id="pgpOperation" class="full-select">
+                            <option value="encrypt">Encrypt (Kirim Pesan Rahasia)</option>
+                            <option value="decrypt">Decrypt (Baca Pesan Rahasia)</option>
+                            <option value="sign">Sign Only (Buat Tanda Tangan)</option>
+                            <option value="verify">Verify (Cek Keaslian Pengirim)</option>
+                            <option value="encrypt_sign">Encrypt & Sign (Aman + Otentik)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="pgpRecipientGroup">
+                        <label>Recipient Public Key (Penerima)</label>
+                        <select id="pgpRecipient" class="full-select">
+                            <option value="">- Select Friend's Key -</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="pgpSignerGroup">
+                        <label>My Private Key (Tanda Tangan/Buka Sandi)</label>
+                        <select id="pgpMyKey" class="full-select">
+                            <option value="">- Select Your Key -</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="pgpPassphraseGroup">
+                        <label>Passphrase (Buka Brankas Anda)</label>
+                        <input type="password" id="pgpPassphraseOps" placeholder="Key Passphrase...">
+                    </div>
+                </div>
+
+                <div class="io-section mt-4">
+                    <div class="input-panel">
+                        <label>Message / Ciphertext / Signature Block</label>
+                        <textarea id="pgpInputText" placeholder="Tuliskan pesan atau paste PGP Block teman Anda di sini..."></textarea>
+                    </div>
+                    
+                    <div class="action-panel">
+                        <button id="pgpExecuteBtn" class="primary-btn">Run PGP</button>
+                    </div>
+
+                    <div class="output-panel">
+                        <label>Result</label>
+                        <textarea id="pgpOutputText" readonly placeholder="Output PGP Block atau pesan divalidasi akan muncul di sini..."></textarea>
+                        <div class="output-actions">
+                            <button id="pgpCopyBtn" class="secondary-btn">Copy to Clipboard</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="pgpErrorMessage" class="error-message hidden mt-2"></div>
+                <div id="pgpSuccessMessage" class="success-message hidden mt-2" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success-color); padding: 1rem; color: #6ee7b7; border-radius: 4px;"></div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

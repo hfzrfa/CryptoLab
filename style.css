@@ -270,7 +270,8 @@ select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:f
     background: rgba(79, 142, 247, 0.05);
 }
 
-select option { background: #0d1729; color: var(--text-primary); }
+select option { background: #0d1729; color: var(--text-primary); padding: 0.4rem; }
+select optgroup { background: #060e1e; color: var(--text-secondary); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.8px; }
 
 .small-select { padding: 0.5rem; max-width: 100px; font-size: 0.9rem; }
 .full-select { padding: 0.85rem 1rem; width: 100%; font-size: 0.95rem; }
